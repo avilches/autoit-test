@@ -1,0 +1,1 @@
+Run("JoyToKey.exe " & $CmdLineRaw)
