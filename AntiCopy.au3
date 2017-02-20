@@ -1,9 +1,11 @@
 #include <Crypt.au3>
 #include <MsgBoxConstants.au3>
 
+Global $home = @HomeDrive & @HomePath & "\Documents\Anticopy\"
+
 $key = "jamon90jamon90jamon90"
-disable("D:")
-;enable("WD-WX31D4502ND7", "D:", false)
+;disable("D:")
+enable("WD-WX31D4502ND7", "D:", false)
 
 ; inicialmente se copian todos con msvc2013.dll, serial-30.dll y serial.dll
 ; en cuanto no coincida el serial, dado que esta el msvc2013.dll, va a saltar un popup cada vez
@@ -16,18 +18,17 @@ disable("D:")
 ;   4) se puede subir un serial-30.ini con un numero muy elevado (por ejemplo 1000 para que al usuario en cuestion no le falle)
 
 
-
 Func compile($serialNumber)
-	DirCreate ("c:\Users\Alberto\Documents\Anticopy\" & $serialNumber)
-	FileCopy("c:\Users\Alberto\Documents\Anticopy\JoyToKey64.au3", "c:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\JoyToKey64.au3", 1)
-	FileDelete("c:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\serialnumber.au3")
-	FileWrite("c:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\serialnumber.au3", "$serialNumber = '" & $serialNumber & "'")
-	RunWait("""C:\Program Files (x86)\AutoIt3\aut2exe\aut2exe.exe"" /in ""C:\Users\Alberto\Documents\Anticopy\" & $serialNumber & _
-					"\JoyToKey64.au3"" /out ""C:\Users\Alberto\Documents\Anticopy\" & $serialNumber & _
-					"\JoyToKey64.exe"" /icon ""C:\Users\Alberto\Documents\Anticopy\JoyToKey.ico"" /nopack /comp 2", _
+	Local $buildFolder = $home & "build\" & $serialNumber & "\"
+	DirCreate ($buildFolder)
+	FileCopy  ($home & "JoyToKey64.au3", $buildFolder & "JoyToKey64.au3", 1)
+	FileDelete($buildFolder & "serialnumber.au3")
+	FileWrite ($buildFolder & "serialnumber.au3", "$serialNumber = '" & $serialNumber & "'")
+	RunWait("""C:\Program Files (x86)\AutoIt3\aut2exe\aut2exe.exe"" /in """ & $buildFolder & "JoyToKey64.au3"" /out """ & $buildFolder &  _
+					"JoyToKey64.exe"" /icon """ & $home & "JoyToKey.ico"" /nopack /comp 2", _
 					"C:\Program Files (x86)\AutoIt3\aut2exe")
-	FileDelete("c:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\serialnumber.au3")
-	FileDelete("c:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\JoyToKey64.au3")
+	FileDelete($buildFolder & "serialnumber.au3")
+	FileDelete($buildFolder & "JoyToKey64.au3")
 EndFunc
 
 Func enable($serialNumber, $drive, $annoyingHyperSpinAlert)
@@ -35,12 +36,12 @@ Func enable($serialNumber, $drive, $annoyingHyperSpinAlert)
 	disable($drive)
 
 	; safe first!
-	FileCopy("c:\Users\Alberto\Documents\Anticopy\dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\msvc2013.dll", 1)
-	FileCopy("c:\Users\Alberto\Documents\Anticopy\dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\serial-30.dll", 1)
-	FileCopy("c:\Users\Alberto\Documents\Anticopy\serial-30.ini", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\serial-30.ini", 1)
+	FileCopy($home & "dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\msvc2013.dll", 1)
+	FileCopy($home & "dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\serial-30.dll", 1)
+	FileCopy($home & "serial-30.ini", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\serial-30.ini", 1)
 
 	; JoyToKey64 fucker
-	FileCopy("C:\Users\Alberto\Documents\Anticopy\" & $serialNumber & "\JoyToKey64.exe", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\JoyToKey64.exe", 1)
+	FileCopy($home & "build\" & $serialNumber & "JoyToKey64.exe", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\JoyToKey64.exe", 1)
 
 
 
@@ -49,13 +50,13 @@ Func enable($serialNumber, $drive, $annoyingHyperSpinAlert)
 	; annoy user?
 	If $annoyingHyperSpinAlert Then
 		FileDelete( $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\AutoHotkey3.dll")
-		_Crypt_EncryptFile("c:\Users\Alberto\Documents\Anticopy\HScript-lock.ahk", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\AutoHotkey3.dll", $key, $CALG_AES_128)
+		_Crypt_EncryptFile($home & "HScript-lock.ahk", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\AutoHotkey3.dll", $key, $CALG_AES_128)
 	EndIf
 
 EndFunc
 
 Func compileNone()
-	RunWait("""C:\Program Files (x86)\AutoIt3\aut2exe\aut2exe.exe"" /in ""C:\Users\Alberto\Documents\Anticopy\JoyToKey64none.au3"" /out ""C:\Users\Alberto\Documents\Anticopy\JoyToKey64none.exe"" /icon ""C:\Users\Alberto\Documents\Anticopy\JoyToKey.ico"" /nopack /comp 2", _
+	RunWait("""C:\Program Files (x86)\AutoIt3\aut2exe\aut2exe.exe"" /in """ & $home & "JoyToKey64none.au3"" /out """ & $home & "build\JoyToKey64none.exe"" /icon """ & $home & "JoyToKey.ico"" /nopack /comp 2", _
 				"C:\Program Files (x86)\AutoIt3\aut2exe")
 EndFunc
 
@@ -72,5 +73,5 @@ Func disable($drive)
 
 	IniWrite($drive & "\Games\HyperSpin-fe\Settings\Settings.ini", "Startup Program", "Executable", "JoyToKey.exe")
 
-	FileCopy("c:\Users\Alberto\Documents\Anticopy\HScript-empty.ahk", $drive & "\Games\HyperSpin-fe\Scripts\HScript\HScript.ahk", 1)
+	FileCopy($home & "HScript-empty.ahk", $drive & "\Games\HyperSpin-fe\Scripts\HScript\HScript.ahk", 1)
 EndFunc
