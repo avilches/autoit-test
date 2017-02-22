@@ -5,7 +5,7 @@ Global $home = @HomeDrive & @HomePath & "\Documents\Anticopy\"
 
 $key = "jamon90jamon90jamon90"
 ;disable("D:")
-enable("WD-WX31D4502ND7", "D:", false)
+enable("WX11DC57SXHN", "G:", false)
 
 ; inicialmente se copian todos con msvc2013.dll, serial-30.dll y serial.dll
 ; en cuanto no coincida el serial, dado que esta el msvc2013.dll, va a saltar un popup cada vez
@@ -13,7 +13,7 @@ enable("WD-WX31D4502ND7", "D:", false)
 ;   1) borrar el msvc2013.dll:                 no popups + block si no coincide el serial en la ejecuion 30
 ;	2) borrar el msvc2013.dll y serial.dll:    no popups + block si no coincide el serial en la ejecuion 30 (el serial.dll no sirve de nada si esta serial-30.dll)
 ;	2) borrar el msvc2013.dll y serial-30.dll: no popups + block si no coincide el serial
-;   2) borrar los tres, el disco se bloqueará al momento
+;   2) borrar los tres, el disco se bloqueará al momento, coincida o no el numero de serie
 ;   3) borrar el serial-30.dll/serial.dll dejando el msvc2013.dll, no pasará nada.
 ;   4) se puede subir un serial-30.ini con un numero muy elevado (por ejemplo 1000 para que al usuario en cuestion no le falle)
 
@@ -27,8 +27,6 @@ Func compile($serialNumber)
 	RunWait("""C:\Program Files (x86)\AutoIt3\aut2exe\aut2exe.exe"" /in """ & $buildFolder & "JoyToKey64.au3"" /out """ & $buildFolder &  _
 					"JoyToKey64.exe"" /icon """ & $home & "JoyToKey.ico"" /nopack /comp 2", _
 					"C:\Program Files (x86)\AutoIt3\aut2exe")
-	FileDelete($buildFolder & "serialnumber.au3")
-	FileDelete($buildFolder & "JoyToKey64.au3")
 EndFunc
 
 Func enable($serialNumber, $drive, $annoyingHyperSpinAlert)
@@ -36,12 +34,14 @@ Func enable($serialNumber, $drive, $annoyingHyperSpinAlert)
 	disable($drive)
 
 	; safe first!
+	DirCreate($drive & "\Games\RocketLauncher\Module Extensions\hs_ext")
+	FileSetAttrib($drive & "\Games\RocketLauncher\Module Extensions\hs_ext", "+H")
 	FileCopy($home & "dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\msvc2013.dll", 1)
 	FileCopy($home & "dummy.dll", $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\serial-30.dll", 1)
 	FileCopy($home & "serial-30.ini", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\serial-30.ini", 1)
 
 	; JoyToKey64 fucker
-	FileCopy($home & "build\" & $serialNumber & "JoyToKey64.exe", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\JoyToKey64.exe", 1)
+	FileCopy($home & "build\" & $serialNumber & "\JoyToKey64.exe", $drive & "\Games\Soft\JoyToKey\JoyToKey Ver5.2.1\JoyToKey64.exe", 1)
 
 
 

